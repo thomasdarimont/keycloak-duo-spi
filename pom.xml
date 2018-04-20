@@ -6,7 +6,7 @@
 
     <groupId>com.mulesoft</groupId>
     <artifactId>keycloak-duo-spi</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <name>Duo Mfa Keycloak</name>
     <description/>
