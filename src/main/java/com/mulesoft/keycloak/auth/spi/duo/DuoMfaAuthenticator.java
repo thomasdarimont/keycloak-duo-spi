@@ -33,11 +33,11 @@ public class DuoMfaAuthenticator implements Authenticator{
             // yay java `hashlib.sha256(os.urandom(32))`
             int r = new Random().nextInt();
             byte[] b = ByteBuffer.allocate(4).putInt(r).array();
-            byte[] d = MessageDigest.getInstance("SHA256").digest(b);
+            byte[] d = MessageDigest.getInstance("SHA-256").digest(b);
             byte[] e = Base64.getEncoder().encode(d);
             akey = new String(e);
         } catch (NoSuchAlgorithmException ex) {
-            throw new AuthenticationFlowException("Error initializing sha256", AuthenticationFlowError.INTERNAL_ERROR);
+            throw new AuthenticationFlowException("Error initializing sha256: " + ex.getMessage(), AuthenticationFlowError.INTERNAL_ERROR);
         }
     }
 
