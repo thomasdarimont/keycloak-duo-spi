@@ -18,16 +18,24 @@ import javax.ws.rs.core.Response;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Random;
 
 import static com.mulesoft.keycloak.auth.spi.duo.DuoMfaAuthenticatorFactory.*;
 
 public class DuoMfaAuthenticator implements Authenticator{
+
+    private static final String DUO_MFA = "DUO_MFA";
     private String akey;
+
     public DuoMfaAuthenticator() {
         try {
             // yay java `hashlib.sha256(os.urandom(32))`
-            akey = new String(MessageDigest.getInstance("SHA256").digest(ByteBuffer.allocate(4).putInt(new Random().nextInt()).array()));
+            int r = new Random().nextInt();
+            byte[] b = ByteBuffer.allocate(4).putInt(r).array();
+            byte[] d = MessageDigest.getInstance("SHA256").digest(b);
+            byte[] e = Base64.getEncoder().encode(d);
+            akey = new String(e);
         } catch (NoSuchAlgorithmException ex) {
             throw new AuthenticationFlowException("Error initializing sha256", AuthenticationFlowError.INTERNAL_ERROR);
         }
@@ -41,7 +49,7 @@ public class DuoMfaAuthenticator implements Authenticator{
 
     @Override
     public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
-        return session.userCredentialManager().isConfiguredFor(realm, user, DuoMfaAuthenticatorCredentialProvider.DUO_MFA);
+        return session.userCredentialManager().isConfiguredFor(realm, user, DUO_MFA);
     }
 
     @Override
