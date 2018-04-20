@@ -7,7 +7,7 @@ Provides an authentication execution for keycloak that presents a Duo iframe, to
 You may need to modify the keycloak versions in the pom.xml to correspond to yours. I'm using 3.3.0.CR2.
 
 ```
-$ mvn clean install
+$ mvn clean test install
 ```
 
 ## Install
