@@ -32,3 +32,6 @@ Since you can't modify the default Authentication Flows, make a copy of Browser.
 When you hit `Config` you can enter your Duo ikey, skey, and apihost (get these from duo.com by adding a *Web SDK* app). 
 
 Then make sure to bind your Copy of Browser flow to the Browser Flow (on the Bindings tab).
+
+## Contributing
+If you are interested in contributing some code to this project, thanks! Please first [read and accept the Contributors Agreement](https://api-notebook.anypoint.mulesoft.com/notebooks#bc1cf75a0284268407e4).
