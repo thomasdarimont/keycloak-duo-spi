@@ -46,7 +46,6 @@ public class DuoMfaAuthenticatorFactory implements AuthenticatorFactory{
 
     private static AuthenticationExecutionModel.Requirement[] REQUIREMENT_CHOICES = {
             AuthenticationExecutionModel.Requirement.REQUIRED,
-            AuthenticationExecutionModel.Requirement.OPTIONAL,
             AuthenticationExecutionModel.Requirement.DISABLED
     };
     @Override
@@ -62,11 +61,6 @@ public class DuoMfaAuthenticatorFactory implements AuthenticatorFactory{
     @Override
     public boolean isConfigurable() {
         return true;
-    }
-
-    @Override
-    public List<ProviderConfigProperty> getConfigProperties() {
-        return configProperties;
     }
 
     private static final List<ProviderConfigProperty> configProperties = new ArrayList<ProviderConfigProperty>();
@@ -95,6 +89,11 @@ public class DuoMfaAuthenticatorFactory implements AuthenticatorFactory{
     }
 
     @Override
+    public List<ProviderConfigProperty> getConfigProperties() {
+        return configProperties;
+    }
+
+    @Override
     public String getHelpText() {
         return "MFA provided by Duo Security";
     }
@@ -106,21 +105,16 @@ public class DuoMfaAuthenticatorFactory implements AuthenticatorFactory{
 
     @Override
     public String getReferenceCategory() {
-        return "Secret Question";
+        return "MFA";
     }
 
     @Override
-    public void init(Config.Scope config) {
-    }
+    public void init(Config.Scope config) {}
 
     @Override
-    public void postInit(KeycloakSessionFactory factory) {
-
-    }
+    public void postInit(KeycloakSessionFactory factory) {}
 
     @Override
-    public void close() {
-
-    }
+    public void close() {}
 
 }
