@@ -41,7 +41,6 @@ import static com.mulesoft.keycloak.auth.spi.duo.DuoMfaAuthenticatorFactory.*;
 
 public class DuoMfaAuthenticator implements Authenticator{
 
-    private static final String DUO_MFA = "DUO_MFA";
     private String akey;
 
     public DuoMfaAuthenticator() {
@@ -65,15 +64,13 @@ public class DuoMfaAuthenticator implements Authenticator{
 
     @Override
     public boolean configuredFor(KeycloakSession session, RealmModel realm, UserModel user) {
-        return session.userCredentialManager().isConfiguredFor(realm, user, DUO_MFA);
+        // No user-specific configuration needed, therefore always "configured"
+        return true;
     }
 
     @Override
-    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {}
-
-    @Override
-    public void authenticate(AuthenticationFlowContext context) {
-        context.challenge(createDuoForm(context, null));
+    public void setRequiredActions(KeycloakSession session, RealmModel realm, UserModel user) {
+        // None - there is no enrollment within Keycloak (there may be enrollment within the Duo frame)
     }
 
     private Response createDuoForm(AuthenticationFlowContext context, String error) {
@@ -91,11 +88,14 @@ public class DuoMfaAuthenticator implements Authenticator{
     }
 
     @Override
+    public void authenticate(AuthenticationFlowContext context) {
+        context.challenge(createDuoForm(context, null));
+    }
+
+    @Override
     public void action(AuthenticationFlowContext context) {
         MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
         if (formData.containsKey("cancel")) {
-            context.cancelLogin();
-            context.clearUser();
             context.resetFlow();
             return;
         }
