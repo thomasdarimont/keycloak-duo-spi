@@ -95,6 +95,8 @@ public class DuoMfaAuthenticator implements Authenticator{
         MultivaluedMap<String, String> formData = context.getHttpRequest().getDecodedFormParameters();
         if (formData.containsKey("cancel")) {
             context.cancelLogin();
+            context.clearUser();
+            context.resetFlow();
             return;
         }
         if (!formData.containsKey("sig_response")) {

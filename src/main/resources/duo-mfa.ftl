@@ -17,5 +17,14 @@
                 border: none;
             }
         </style>
+        <form id="kc-totp-login-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
+            <div class="form-group">
+                <div id="kc-form-buttons" class="col-md-offset-2 col-md-10 submit">
+                    <div class="">
+                        <button type="submit" class="${properties.kcButtonClass!} ${properties.kcButtonDefaultClass!} ${properties.kcButtonLargeClass!}" name="cancel" value="Cancel">${msg("doCancel")}</button>
+                    </div>
+                </div>
+            </div>
+        </form>k
     </#if>
 </@layout.registrationLayout>
