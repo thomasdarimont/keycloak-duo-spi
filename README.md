@@ -1,6 +1,6 @@
 # keycloak-duo-spi
 
-Provides an authentication execution for keycloak that presents a Duo iframe, to be used after primary authentication.
+Keycloak integration for Duo Security MFA. Provides an authentication execution for keycloak that presents a Duo iframe, to be used after primary authentication. (https://duo.com/)
 
 ## Build
 
