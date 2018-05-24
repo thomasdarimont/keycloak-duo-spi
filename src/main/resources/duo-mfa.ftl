@@ -25,6 +25,6 @@
                     </div>
                 </div>
             </div>
-        </form>k
+        </form>
     </#if>
 </@layout.registrationLayout>
