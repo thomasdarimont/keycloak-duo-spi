@@ -30,6 +30,7 @@ public class DuoMfaAuthenticatorTest {
         Map<String, String> m = new HashMap<>(3);
         m.put(PROP_IKEY, "XXXXXXXXXXXXXXXXXXXX");
         m.put(PROP_SKEY, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+        m.put(PROP_AKEY, "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
         m.put(PROP_APIHOST, "api-99999999.duosecurity.com");
 
         AuthenticatorConfigModel t = mock(AuthenticatorConfigModel.class);

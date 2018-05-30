@@ -41,20 +41,7 @@ import static com.mulesoft.keycloak.auth.spi.duo.DuoMfaAuthenticatorFactory.*;
 
 public class DuoMfaAuthenticator implements Authenticator{
 
-    private String akey;
-
-    public DuoMfaAuthenticator() {
-        try {
-            // yay java `hashlib.sha256(os.urandom(32))`
-            int r = new Random().nextInt();
-            byte[] b = ByteBuffer.allocate(4).putInt(r).array();
-            byte[] d = MessageDigest.getInstance("SHA-256").digest(b);
-            byte[] e = Base64.getEncoder().encode(d);
-            akey = new String(e);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new AuthenticationFlowException("Error initializing sha256: " + ex.getMessage(), AuthenticationFlowError.INTERNAL_ERROR);
-        }
-    }
+    public DuoMfaAuthenticator() {}
 
     @Override
     public boolean requiresUser() {
@@ -74,7 +61,7 @@ public class DuoMfaAuthenticator implements Authenticator{
     }
 
     private Response createDuoForm(AuthenticationFlowContext context, String error) {
-        String sig_request = DuoWeb.signRequest(duoIkey(context), duoSkey(context), akey, context.getUser().getUsername());
+        String sig_request = DuoWeb.signRequest(duoIkey(context), duoSkey(context), duoAkey(context), context.getUser().getUsername());
         LoginFormsProvider form = context.form()
                 .setAttribute("sig_request", sig_request)
                 .setAttribute("apihost", duoApihost(context));
@@ -106,7 +93,7 @@ public class DuoMfaAuthenticator implements Authenticator{
         String sig_response = formData.getFirst("sig_response");
         String authenticated_username = null;
         try {
-            authenticated_username = DuoWeb.verifyResponse(duoIkey(context), duoSkey(context), akey, sig_response);
+            authenticated_username = DuoWeb.verifyResponse(duoIkey(context), duoSkey(context), duoAkey(context), sig_response);
         } catch (Exception ex) {
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createDuoForm(context, ex.getMessage()));
             return;
@@ -131,6 +118,11 @@ public class DuoMfaAuthenticator implements Authenticator{
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
         if (config == null) return "";
         return String.valueOf(config.getConfig().get(PROP_SKEY));
+    }
+    private String duoAkey(AuthenticationFlowContext context) {
+        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
+        if (config == null) return "";
+        return String.valueOf(config.getConfig().get(PROP_AKEY));
     }
     private String duoApihost(AuthenticationFlowContext context) {
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();

@@ -32,6 +32,7 @@ public class DuoMfaAuthenticatorFactory implements AuthenticatorFactory{
     private static final DuoMfaAuthenticator SINGLETON = new DuoMfaAuthenticator();
     public static final String PROP_IKEY = "duomfa.ikey";
     public static final String PROP_SKEY = "duomfa.skey";
+    public static final String PROP_AKEY = "duomfa.akey";
     public static final String PROP_APIHOST = "duomfa.apihost";
 
     @Override
@@ -79,6 +80,13 @@ public class DuoMfaAuthenticatorFactory implements AuthenticatorFactory{
         skey.setType(ProviderConfigProperty.STRING_TYPE);
         skey.setHelpText("Secret key from Duo admin portal");
         configProperties.add(skey);
+
+        ProviderConfigProperty akey = new ProviderConfigProperty();
+        akey.setName(PROP_AKEY);
+        akey.setLabel("Challenge nonce");
+        akey.setType(ProviderConfigProperty.STRING_TYPE);
+        akey.setHelpText("Any random alpha-numeric string, 40 characters or more. You can generate this yourself");
+        configProperties.add(akey);
 
         ProviderConfigProperty api_host = new ProviderConfigProperty();
         api_host.setName(PROP_APIHOST);
