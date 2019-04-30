@@ -16,9 +16,9 @@ limitations under the License.
 
 package com.mulesoft.keycloak.auth.spi.duo;
 
+import com.duosecurity.duoweb.DuoWeb;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.AuthenticationFlowError;
-import org.keycloak.authentication.AuthenticationFlowException;
 import org.keycloak.authentication.Authenticator;
 import org.keycloak.forms.login.LoginFormsProvider;
 import org.keycloak.models.AuthenticatorConfigModel;
@@ -26,22 +26,19 @@ import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 
-import com.duosecurity.duoweb.DuoWeb;
-
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
-import java.nio.ByteBuffer;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Random;
+import static com.mulesoft.keycloak.auth.spi.duo.DuoMfaAuthenticatorFactory.PROP_AKEY;
+import static com.mulesoft.keycloak.auth.spi.duo.DuoMfaAuthenticatorFactory.PROP_APIHOST;
+import static com.mulesoft.keycloak.auth.spi.duo.DuoMfaAuthenticatorFactory.PROP_IKEY;
+import static com.mulesoft.keycloak.auth.spi.duo.DuoMfaAuthenticatorFactory.PROP_SKEY;
 
-import static com.mulesoft.keycloak.auth.spi.duo.DuoMfaAuthenticatorFactory.*;
-
-public class DuoMfaAuthenticator implements Authenticator{
-
-    public DuoMfaAuthenticator() {}
+/**
+ * {@link Authenticator} with support for MFA authentication with DUO Security.
+ */
+public class DuoMfaAuthenticator implements Authenticator {
 
     @Override
     public boolean requiresUser() {
@@ -61,10 +58,18 @@ public class DuoMfaAuthenticator implements Authenticator{
     }
 
     private Response createDuoForm(AuthenticationFlowContext context, String error) {
-        String sig_request = DuoWeb.signRequest(duoIkey(context), duoSkey(context), duoAkey(context), context.getUser().getUsername());
+
+        DuoConfig config = DuoConfig.from(context);
+        if (config == null) {
+            return context.form()
+                    .setError("Did you configure Duo in Keycloak?")
+                    .createForm("duo-mfa.ftl");
+        }
+
+        String sig_request = DuoWeb.signRequest(config.ikey, config.skey, config.akey, context.getUser().getUsername());
         LoginFormsProvider form = context.form()
                 .setAttribute("sig_request", sig_request)
-                .setAttribute("apihost", duoApihost(context));
+                .setAttribute("apihost", config.apiHost);
         form.addScript("https://api.duosecurity.com/frame/hosted/Duo-Web-v2.js");
         if (error != null) {
             form.setError(error);
@@ -90,10 +95,17 @@ public class DuoMfaAuthenticator implements Authenticator{
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createDuoForm(context, "missing sig_response"));
             return;
         }
+
+        DuoConfig config = DuoConfig.from(context);
+        if (config == null) {
+            context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createDuoForm(context, "invalid duo config"));
+            return;
+        }
+
         String sig_response = formData.getFirst("sig_response");
-        String authenticated_username = null;
+        String authenticated_username;
         try {
-            authenticated_username = DuoWeb.verifyResponse(duoIkey(context), duoSkey(context), duoAkey(context), sig_response);
+            authenticated_username = DuoWeb.verifyResponse(config.ikey, config.skey, config.akey, sig_response);
         } catch (Exception ex) {
             context.failureChallenge(AuthenticationFlowError.INVALID_CREDENTIALS, createDuoForm(context, ex.getMessage()));
             return;
@@ -107,27 +119,38 @@ public class DuoMfaAuthenticator implements Authenticator{
     }
 
     @Override
-    public void close() {}
+    public void close() {
+        // NOOP
+    }
 
-    private String duoIkey(AuthenticationFlowContext context) {
-        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
-        if (config == null) return "";
-        return String.valueOf(config.getConfig().get(PROP_IKEY));
-    }
-    private String duoSkey(AuthenticationFlowContext context) {
-        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
-        if (config == null) return "";
-        return String.valueOf(config.getConfig().get(PROP_SKEY));
-    }
-    private String duoAkey(AuthenticationFlowContext context) {
-        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
-        if (config == null) return "";
-        return String.valueOf(config.getConfig().get(PROP_AKEY));
-    }
-    private String duoApihost(AuthenticationFlowContext context) {
-        AuthenticatorConfigModel config = context.getAuthenticatorConfig();
-        if (config == null) return "";
-        return String.valueOf(config.getConfig().get(PROP_APIHOST));
+    static class DuoConfig {
+
+        private final String ikey;
+
+        private final String skey;
+
+        private final String akey;
+
+        private final String apiHost;
+
+        DuoConfig(String ikey, String skey, String akey, String apiHost) {
+            this.ikey = ikey;
+            this.skey = skey;
+            this.akey = akey;
+            this.apiHost = apiHost;
+        }
+
+        static DuoConfig from(AuthenticationFlowContext context) {
+
+            AuthenticatorConfigModel configModel = context.getAuthenticatorConfig();
+            if (configModel == null) {
+                return null;
+            }
+
+            Map<String, String> config = configModel.getConfig();
+
+            return new DuoConfig(config.get(PROP_IKEY), config.get(PROP_SKEY), config.get(PROP_AKEY), config.get(PROP_APIHOST));
+        }
     }
 
 }

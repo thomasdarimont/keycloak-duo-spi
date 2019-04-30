@@ -28,12 +28,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DuoMfaAuthenticatorFactory implements AuthenticatorFactory{
-    public static final String PROVIDER_ID = "duo-mfa-authenticator";
+
     private static final DuoMfaAuthenticator SINGLETON = new DuoMfaAuthenticator();
-    public static final String PROP_IKEY = "duomfa.ikey";
-    public static final String PROP_SKEY = "duomfa.skey";
-    public static final String PROP_AKEY = "duomfa.akey";
-    public static final String PROP_APIHOST = "duomfa.apihost";
+
+    static final String PROVIDER_ID = "duo-mfa-authenticator";
+    static final String PROP_IKEY = "duomfa.ikey";
+    static final String PROP_SKEY = "duomfa.skey";
+    static final String PROP_AKEY = "duomfa.akey";
+    static final String PROP_APIHOST = "duomfa.apihost";
 
     @Override
     public String getId() {
